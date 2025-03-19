@@ -1,3 +1,5 @@
+import anna.ufpb.br.dcx.Contato;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,7 +8,7 @@ public class GravadorDeDados {
     private String arquivoDados;
 
     public GravadorDeDados(){
-        this.arquivoDados = "conttos.dat";
+        this.arquivoDados = "contatos.dat";
     }
 
     public Collection<Contato> recuperarContatos() throws IOException {
@@ -20,7 +22,7 @@ public class GravadorDeDados {
         }
     }
 
-    public void gravaContato(Collection<Contato> contatos) throws IOException{
+    public void salvarContato(Collection<Contato> contatos) throws IOException{
           ArrayList<Contato> contatoArrayList = new ArrayList<>();
           contatoArrayList.addAll(contatos);
           try (ObjectInputStream out = new ObjectOutputStream(new FileOutputStream(arquivoDados))){
@@ -30,3 +32,8 @@ public class GravadorDeDados {
 
 
 }
+
+public void main() {
+}
+
+

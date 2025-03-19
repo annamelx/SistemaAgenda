@@ -1,6 +1,9 @@
+package anna.ufpb.br.dcx;
+
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Contato {
+public class Contato implements Serializable {
     private String nome;
     private  int diaAniversario;
     private  int mesAniversario;
@@ -56,4 +59,5 @@ public class Contato {
     public int hashCode() {
         return Objects.hash(nome, diaAniversario, mesAniversario);
     }
-}
+  }
+
