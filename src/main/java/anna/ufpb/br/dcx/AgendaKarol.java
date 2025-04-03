@@ -2,13 +2,12 @@ package anna.ufpb.br.dcx;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Collection;
 
 public class AgendaKarol extends JFrame {
 
-    private AgendaAnna agenda = new AgendaAnna();
+    private Agenda agenda = new AgendaAnna();  // usamos AgendaAnna como lógica
 
     private JTextField nomeField = new JTextField(15);
     private JTextField diaField = new JTextField(2);
@@ -19,7 +18,8 @@ public class AgendaKarol extends JFrame {
         super("Agenda de Contatos");
 
         JPanel painelCadastro = new JPanel();
-        painelCadastro.setLayout(new GridLayout(4, 2));
+        painelCadastro.setLayout(new GridLayout(6, 2));
+
         painelCadastro.add(new JLabel("Nome:"));
         painelCadastro.add(nomeField);
         painelCadastro.add(new JLabel("Dia:"));
@@ -30,68 +30,92 @@ public class AgendaKarol extends JFrame {
         JButton cadastrarBtn = new JButton("Cadastrar Contato");
         JButton pesquisarBtn = new JButton("Pesquisar Aniversariantes");
         JButton removerBtn = new JButton("Remover Contato");
+        JButton salvarBtn = new JButton("Salvar Dados");
+        JButton recuperarBtn = new JButton("Recuperar Dados");
 
         painelCadastro.add(cadastrarBtn);
         painelCadastro.add(pesquisarBtn);
         painelCadastro.add(removerBtn);
+        painelCadastro.add(salvarBtn);
+        painelCadastro.add(recuperarBtn);
 
-        JPanel painelResultado = new JPanel();
         resultadoArea.setEditable(false);
-        painelResultado.add(new JScrollPane(resultadoArea));
+        JScrollPane scrollPane = new JScrollPane(resultadoArea);
+        JPanel painelResultado = new JPanel();
+        painelResultado.add(scrollPane);
 
         add(painelCadastro, BorderLayout.NORTH);
-        add(painelResultado, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
-        cadastrarBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nome = nomeField.getText();
+        // Ações dos botões
+        cadastrarBtn.addActionListener(e -> {
+            String nome = nomeField.getText();
+            try {
                 int dia = Integer.parseInt(diaField.getText());
                 int mes = Integer.parseInt(mesField.getText());
-
-                if (agenda.cadastraContato(nome, dia, mes)) {
+                boolean sucesso = agenda.cadastraContato(nome, dia, mes);
+                if (sucesso) {
                     resultadoArea.setText("Contato cadastrado com sucesso!");
                 } else {
                     resultadoArea.setText("Contato já existe.");
                 }
+            } catch (NumberFormatException ex) {
+                resultadoArea.setText("Dia e mês devem ser números.");
             }
         });
 
-        pesquisarBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        pesquisarBtn.addActionListener(e -> {
+            try {
                 int dia = Integer.parseInt(diaField.getText());
                 int mes = Integer.parseInt(mesField.getText());
-
                 Collection<Contato> aniversariantes = agenda.pesquisaAniversariantes(dia, mes);
                 if (aniversariantes.isEmpty()) {
                     resultadoArea.setText("Nenhum aniversariante encontrado.");
                 } else {
-                    StringBuilder resultado = new StringBuilder("Aniversariantes:\n");
+                    StringBuilder sb = new StringBuilder("Aniversariantes:\n");
                     for (Contato c : aniversariantes) {
-                        resultado.append(c).append("\n");
+                        sb.append(c).append("\n");
                     }
-                    resultadoArea.setText(resultado.toString());
+                    resultadoArea.setText(sb.toString());
                 }
+            } catch (NumberFormatException ex) {
+                resultadoArea.setText("Digite dia e mês válidos.");
             }
         });
 
-        removerBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nome = nomeField.getText();
-                try {
-                    if (agenda.removeContato(nome)) {
-                        resultadoArea.setText("Contato removido com sucesso!");
-                    }
-                } catch (ContatoInexistenteException ex) {
-                    resultadoArea.setText("Erro: " + ex.getMessage());
+        removerBtn.addActionListener(e -> {
+            String nome = nomeField.getText();
+            try {
+                boolean removido = agenda.removeContato(nome);
+                if (removido) {
+                    resultadoArea.setText("Contato removido com sucesso!");
                 }
+            } catch (ContatoInexistenteException ex) {
+                resultadoArea.setText("Erro: " + ex.getMessage());
+            }
+        });
+
+        salvarBtn.addActionListener(e -> {
+            try {
+                agenda.salvarDados();
+                resultadoArea.setText("Dados salvos com sucesso.");
+            } catch (IOException ex) {
+                resultadoArea.setText("Erro ao salvar dados: " + ex.getMessage());
+            }
+        });
+
+        recuperarBtn.addActionListener(e -> {
+            try {
+                agenda.recuperarDados();
+                resultadoArea.setText("Dados recuperados com sucesso.");
+            } catch (IOException ex) {
+                resultadoArea.setText("Erro ao recuperar dados: " + ex.getMessage());
             }
         });
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
@@ -99,4 +123,5 @@ public class AgendaKarol extends JFrame {
         new AgendaKarol();
     }
 }
+
 
