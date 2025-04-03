@@ -1,13 +1,15 @@
 package anna.ufpb.br.dcx;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
 public class AgendaKarol extends JFrame {
 
-    private Agenda agenda = new AgendaAnna();  // usamos AgendaAnna como lógica
+    private Agenda agenda = new AgendaAnna();
 
     private JTextField nomeField = new JTextField(15);
     private JTextField diaField = new JTextField(2);
@@ -17,8 +19,31 @@ public class AgendaKarol extends JFrame {
     public AgendaKarol() {
         super("Agenda de Contatos");
 
-        JPanel painelCadastro = new JPanel();
-        painelCadastro.setLayout(new GridLayout(6, 2));
+        // Carrega a imagem de fundo usando File
+        Image imagemDeFundo = null;
+        try {
+            imagemDeFundo = ImageIO.read(new File("fundo.jpg"));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar imagem de fundo: " + e.getMessage());
+        }
+
+        Image finalImagemDeFundo = imagemDeFundo;
+
+        // Painel personalizado para imagem de fundo
+        JPanel painelComImagem = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (finalImagemDeFundo != null) {
+                    g.drawImage(finalImagemDeFundo, 0, 0, getWidth(), getHeight(), this);
+                }
+            }
+        };
+        painelComImagem.setLayout(new BorderLayout());
+
+        // Painel de entrada
+        JPanel painelCadastro = new JPanel(new GridLayout(6, 2));
+        painelCadastro.setOpaque(false);
 
         painelCadastro.add(new JLabel("Nome:"));
         painelCadastro.add(nomeField);
@@ -41,11 +66,15 @@ public class AgendaKarol extends JFrame {
 
         resultadoArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(resultadoArea);
-        JPanel painelResultado = new JPanel();
-        painelResultado.add(scrollPane);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        resultadoArea.setOpaque(false);
+        resultadoArea.setBackground(new Color(255, 255, 255, 160));
 
-        add(painelCadastro, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        painelComImagem.add(painelCadastro, BorderLayout.NORTH);
+        painelComImagem.add(scrollPane, BorderLayout.CENTER);
+
+        setContentPane(painelComImagem);
 
         // Ações dos botões
         cadastrarBtn.addActionListener(e -> {
@@ -54,11 +83,7 @@ public class AgendaKarol extends JFrame {
                 int dia = Integer.parseInt(diaField.getText());
                 int mes = Integer.parseInt(mesField.getText());
                 boolean sucesso = agenda.cadastraContato(nome, dia, mes);
-                if (sucesso) {
-                    resultadoArea.setText("Contato cadastrado com sucesso!");
-                } else {
-                    resultadoArea.setText("Contato já existe.");
-                }
+                resultadoArea.setText(sucesso ? "Contato cadastrado com sucesso!" : "Contato já existe.");
             } catch (NumberFormatException ex) {
                 resultadoArea.setText("Dia e mês devem ser números.");
             }
@@ -87,9 +112,7 @@ public class AgendaKarol extends JFrame {
             String nome = nomeField.getText();
             try {
                 boolean removido = agenda.removeContato(nome);
-                if (removido) {
-                    resultadoArea.setText("Contato removido com sucesso!");
-                }
+                resultadoArea.setText(removido ? "Contato removido com sucesso!" : "Contato não encontrado.");
             } catch (ContatoInexistenteException ex) {
                 resultadoArea.setText("Erro: " + ex.getMessage());
             }
@@ -114,7 +137,7 @@ public class AgendaKarol extends JFrame {
         });
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        pack();
+        setSize(480, 400);
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -123,5 +146,3 @@ public class AgendaKarol extends JFrame {
         new AgendaKarol();
     }
 }
-
-
